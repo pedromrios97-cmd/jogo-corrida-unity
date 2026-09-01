@@ -1,15 +1,15 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using TMPro;
 
-public class LOanding : MonoBehaviour
+public class LOading : MonoBehaviour
 {
     public TextMeshProUGUI txt;
 
     private void Start()
     {
-        CarregarNivel("game");
+        CarregarNivel("Game");
     }
 
     public void CarregarNivel(string nomeDaCena)
@@ -19,19 +19,45 @@ public class LOanding : MonoBehaviour
 
     IEnumerator CarregarEmSegundoPlano(string nomeDaCena)
     {
-        AsyncOperation operacao = SceneManager.LoadSceneAsync(nomeDaCena);
+        yield return null;
+        yield return new WaitForEndOfFrame();
 
-        // O Unity carrega até 90% e deixa os últimos 10% para ativar a cena
+        Application.backgroundLoadingPriority = ThreadPriority.BelowNormal;
+
+        AsyncOperation operacao = SceneManager.LoadSceneAsync(nomeDaCena);
+        operacao.allowSceneActivation = false;
+
+        float progressoVisual = 0f;
+
         while (!operacao.isDone)
         {
-            // progress vai de 0 a 0.9
-            float progresso = Mathf.Clamp01(operacao.progress / 0.9f);
+            float progressoAlvo = Mathf.Clamp01(operacao.progress / 0.9f);
 
-            // Multiplica por 100 para ter o valor em porcentagem
-            float porcentagem = progresso * 100f;
+            while (progressoVisual < progressoAlvo)
+            {
+                progressoVisual = Mathf.MoveTowards(progressoVisual, progressoAlvo, Time.deltaTime * 0.5f);
 
-            Debug.Log($"Carregando: {porcentagem:F0}%");
-            txt.text = $"Carregando {porcentagem:F0}%";
+                if (txt != null)
+                {
+                    txt.text = $"Carregando {(progressoVisual * 100f):F0}%";
+                }
+
+                yield return null;
+            }
+
+            if (operacao.progress >= 0.9f && progressoVisual >= 0.99f)
+            {
+                if (txt != null)
+                {
+                    txt.text = "Carregando 100%";
+                }
+
+                yield return new WaitForSeconds(0.2f);
+
+                Application.backgroundLoadingPriority = ThreadPriority.Normal;
+
+                operacao.allowSceneActivation = true;
+            }
 
             yield return null;
         }
