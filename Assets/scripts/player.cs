@@ -43,6 +43,7 @@ public class player : MonoBehaviour
     private GameObject currentCar;
     public GameObject nearestCar;
     public List<GameObject> nearestCars = new List<GameObject>();
+    public MinimapRenderer mapRenderer;
 
     [Header("input")]
     public InputSystem_Actions actions;
@@ -88,11 +89,21 @@ public class player : MonoBehaviour
 
         if (isDriving) 
         {
+            if(mapRenderer != null)
+            {
+                mapRenderer.zoom = Mathf.Lerp(mapRenderer.zoom, 1.23f, 0.05f); 
+            }
+            
             animm.runtimeAnimatorController = drivingController;
             return;
         }
         else
         {
+            if (mapRenderer != null)
+            {
+                mapRenderer.zoom = Mathf.Lerp(mapRenderer.zoom, 3f, 0.05f);
+            }
+
             animm.runtimeAnimatorController = animController;
         }
 
