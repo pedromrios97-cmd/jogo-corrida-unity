@@ -44,6 +44,7 @@ public class player : MonoBehaviour
     public GameObject nearestCar;
     public List<GameObject> nearestCars = new List<GameObject>();
     public MinimapRenderer mapRenderer;
+    public speedometer speedometer;
 
     [Header("input")]
     public InputSystem_Actions actions;
@@ -109,8 +110,24 @@ public class player : MonoBehaviour
 
         Gravity();
         Move();
+        Velocimeter();
 
         Debug.Log(actions.Player.Drive.IsPressed());
+    }
+
+    void Velocimeter()
+    {
+        if (speedometer != null && currentCar != null)
+        {
+            speedometer.gameObject.SetActive(false);
+            speedometer.source = currentCar.GetComponent<Rigidbody>();
+        }
+
+        else
+        {
+            speedometer.gameObject.SetActive(false);
+            speedometer.source = null;
+        }    
     }
 
     private void EnterCar()
