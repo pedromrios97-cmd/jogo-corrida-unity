@@ -157,6 +157,9 @@ public class player : MonoBehaviour
         currentCar.GetComponent<Car_Controller>().player = this;
         playerSeat = currentCar.GetComponent<Car_Controller>().playerSeat;
 
+        speedometer.source = currentCar.GetComponent<Rigidbody>();
+        speedometer.gameObject.SetActive(true);
+
         if (!currentCar.GetComponent<Car_Controller>().carStarted)
         {
             currentCar.GetComponent<Car_Controller>().StartCar();
@@ -197,6 +200,9 @@ public class player : MonoBehaviour
         playerSeat = null;
 
         currentCar.GetComponent<Car_Controller>().player = null;
+
+        speedometer.source = null;
+        speedometer.gameObject.SetActive(false);
 
         currentCar = null;
         isDriving = false;
