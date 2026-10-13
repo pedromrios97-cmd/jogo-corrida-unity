@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,7 +16,7 @@ public class racing_controller : MonoBehaviour
     [SerializeField] private Transform checkpointArrow;
     [SerializeField] private Transform finishMarket;
     [SerializeField] private float markerHeight;
-    [SerializeField] private Vector3 arrowRotation0ffset = new Vector3(0, 0, 90f);
+    [SerializeField] private Vector3 arrowRotationOffset = new Vector3(0, 0, 90f);
 
     public UnityEvent<int> OnCheckpointPassed;
     public UnityEvent<int> OnLapCompleted;
@@ -95,6 +95,93 @@ public class racing_controller : MonoBehaviour
 
     public void Advance()
     {
+        OnCheckpointPassed?.Invoke(_index);
 
+        bool clossedLap = circuit && (_index + 1) % TargetsPerLap == 0;
+        _index++;
+
+        if(_index >= _targets.Count)
+        {
+            //Finish();
+            return;
+        }
+
+        if (clossedLap)
+        {
+            _lap++;
+            OnLapCompleted?.Invoke(_lap - 1);
+        }
+
+        //UpdateMarkers();
+    }
+
+    public void Finish()
+    {
+        _Finished = true;
+        if (_arrow != null) _arrow.gameObject.SetActive(false);
+        if (_finish != null) _finish.gameObject.SetActive(false);
+        OnFinished?.Invoke();
+    }
+
+    private void UpdateMarkers()
+    {
+        if (_index >= _targets.Count) return;
+
+        RoadNode current = _targets[_index];
+        if (current == null) return;
+
+        bool isFinish = _index == _targets.Count - 1;
+
+        if (_arrow != null)
+        {
+            _arrow.gameObject.SetActive(!isFinish);
+            if (!isFinish)
+            {
+                _arrow.position = current.Position + Vector3.up * markerHeight;
+                Vector3 dir = _targets[_index + 1].Position - current.Position;
+                dir.y = 0f;
+                if (dir.sqrMagnitude > 0.001f)
+                    _arrow.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(arrowRotationOffset);
+            }
+        }
+
+        if (_finish != null)
+        {
+            _finish.gameObject.SetActive(isFinish);
+            if (isFinish)
+            {
+                _finish.position = current.Position;
+                // Orienta a linha na direção de chegada (fica atravessada na pista).
+                Vector3 approach = _index > 0 && _targets[_index - 1] != null
+                    ? current.Position - _targets[_index - 1].Position
+                    : current.Position - car.position;
+                approach.y = 0f;
+                if (approach.sqrMagnitude > 0.001f)
+                    _finish.rotation = Quaternion.LookRotation(approach);
+            }
+        }
+    }
+
+    // ---- Usados pela ferramenta de editor (escolher rota clicando) ----
+    public IReadOnlyList<RoadNode> Route => route;
+    public void AddCheckpoint(RoadNode node) { if (node != null) route.Add(node); }
+    public void RemoveLastCheckpoint() { if (route.Count > 0) route.RemoveAt(route.Count - 1); }
+    public void ClearRoute() { route.Clear(); }
+
+    private void OnDrawGizmos()
+    {
+        if (route == null) return;
+        Gizmos.color = new Color(1f, 0.6f, 0.1f);
+        for (int i = 0; i < route.Count; i++)
+        {
+            if (route[i] == null) continue;
+            Gizmos.DrawSphere(route[i].Position + Vector3.up * 0.5f, 0.7f);
+            if (i + 1 < route.Count && route[i + 1] != null)
+                Gizmos.DrawLine(route[i].Position, route[i + 1].Position);
+        }
+        // Fecha o circuito visualmente (último → primeiro).
+        if (circuit && route.Count > 1 && route[0] != null && route[route.Count - 1] != null)
+            Gizmos.DrawLine(route[route.Count - 1].Position, route[0].Position);
     }
 }
+

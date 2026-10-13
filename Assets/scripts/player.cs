@@ -111,8 +111,6 @@ public class player : MonoBehaviour
         Gravity();
         Move();
         Velocimeter();
-
-        Debug.Log(actions.Player.Drive.IsPressed());
     }
 
     void Velocimeter()

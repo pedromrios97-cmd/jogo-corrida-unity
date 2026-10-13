@@ -3019,6 +3019,79 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2129012232027234204, guid: adce9d3aecc806e4291b160d931e27a8, type: 3}
   m_PrefabInstance: {fileID: 23770126}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &23860466
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 23860468}
+  - component: {fileID: 23860469}
+  m_Layer: 0
+  m_Name: racerController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &23860468
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23860466}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 175.42647, y: 9.85942, z: -167.63333}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &23860469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23860466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd2d1317b8ac65741bd49ec26556c48a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::racing_controller
+  route:
+  - {fileID: 1287244599}
+  - {fileID: 1534916741}
+  - {fileID: 2071400451}
+  - {fileID: 1867895426}
+  - {fileID: 1467181952}
+  - {fileID: 518202157}
+  - {fileID: 1518328156}
+  - {fileID: 1105031710}
+  - {fileID: 1096778646}
+  - {fileID: 40592603}
+  - {fileID: 6125902}
+  circuit: 1
+  laps: 3
+  car: {fileID: 1521294142}
+  reachRadius: 6
+  checkpointArrow: {fileID: 712380786200258838, guid: 895a3e1b357bd1b4bbbe4a86c1417def, type: 3}
+  finishMarket: {fileID: 7185474600060418666, guid: f32275c22d706594eb5bbd55b132db8f, type: 3}
+  markerHeight: 3
+  arrowRotationOffset: {x: 0, y: 0, z: 90}
+  OnCheckpointPassed:
+    m_PersistentCalls:
+      m_Calls: []
+  OnLapCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnFinished:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &25528839
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -116039,7 +116112,7 @@ Transform:
   m_GameObject: {fileID: 949723644}
   serializedVersion: 2
   m_LocalRotation: {x: 0.07315665, y: -0.00000002972247, z: 0.0000000021802382, w: 0.9973205}
-  m_LocalPosition: {x: 194.6, y: 12.690001, z: -187.5}
+  m_LocalPosition: {x: -287.6, y: 12.690001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -180000,14 +180073,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1521294141}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 196.3, y: 9.6, z: -183}
+  m_LocalRotation: {x: -0, y: 0.99482304, z: -0, w: 0.10162309}
+  m_LocalPosition: {x: -289.5, y: 9.6, z: -3.9}
   m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1394322309257343420}
-  - {fileID: 1971603526415228035}
   - {fileID: 1231170679}
+  - {fileID: 1971603526415228035}
   - {fileID: 753095248}
   - {fileID: 1832830010}
   - {fileID: 2065810689}
@@ -180021,7 +180094,7 @@ Transform:
   - {fileID: 1445283634}
   - {fileID: 1564054352}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 168.335, z: 0}
 --- !u!135 &1521294143
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -316539,7 +316612,7 @@ Transform:
   m_GameObject: {fileID: 311623669985892886}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.1944911, z: 0, w: 0.98090434}
-  m_LocalPosition: {x: 194.6, y: 10.5, z: -183.5}
+  m_LocalPosition: {x: -287.6, y: 10.5, z: -6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -317519,3 +317592,4 @@ SceneRoots:
   - {fileID: 760355432}
   - {fileID: 213518087}
   - {fileID: 1342346878}
+  - {fileID: 23860468}
