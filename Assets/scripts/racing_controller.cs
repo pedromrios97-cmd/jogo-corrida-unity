@@ -45,9 +45,9 @@ public class racing_controller : MonoBehaviour
         _Finished = false;
 
         if (checkpointArrow != null) _arrow = Instantiate(checkpointArrow);
-        if (finishMarket != null) _finish = Instantiate(finishMarket); 
+        if (finishMarket != null) _finish = Instantiate(finishMarket);
 
-        //UpdateMarkers()
+        UpdateMarkers();
     }
 
     private void BuildTargets()
@@ -102,7 +102,7 @@ public class racing_controller : MonoBehaviour
 
         if(_index >= _targets.Count)
         {
-            //Finish();
+            Finish();
             return;
         }
 
@@ -112,7 +112,7 @@ public class racing_controller : MonoBehaviour
             OnLapCompleted?.Invoke(_lap - 1);
         }
 
-        //UpdateMarkers();
+        UpdateMarkers();
     }
 
     public void Finish()

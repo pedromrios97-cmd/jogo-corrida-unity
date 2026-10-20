@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,12 +9,26 @@ public class MinimapRenderer : MaskableGraphic
     [Tooltip("O que fica no centro do mapa (normalmente o carro do jogador).")]
     [SerializeField] private Transform target;
 
-    [Header("AparÍncia")]
+    [Header("Apar√™ncia")]
     [Tooltip("Pixels por unidade de mundo (zoom do mapa).")]
-    public float zoom = 2f;
-    [SerializeField] private float lineWidth = 23f;
+    [SerializeField] public float zoom = 4f;
+    [SerializeField] private float lineWidth = 3f;
     [Tooltip("Gira o mapa com o alvo (frente do carro aponta para cima).")]
     [SerializeField] private bool rotateWithTarget = true;
+
+    [Header("Trajeto da corrida (opcional)")]
+    [Tooltip("RaceController da corrida. Se vazio, o trajeto n√£o √© desenhado.")]
+    [SerializeField] public racing_controller race;
+    [SerializeField] public Color routeColor = new Color(1f, 0.55f, 0.1f, 1f);
+    [Tooltip("Espessura do trajeto em rela√ß√£o √†s ruas.")]
+    [SerializeField] private float routeWidthMultiplier = 1.5f;
+    [SerializeField] private Color checkpointColor = Color.white;
+    [Tooltip("Raio dos c√≠rculos de checkpoint (pixels do mapa).")]
+    [SerializeField] private float checkpointRadius = 6f;
+    [Tooltip("Cor do PR√ìXIMO checkpoint (o alvo atual).")]
+    [SerializeField] private Color nextCheckpointColor = new Color(0.25f, 1f, 0.4f, 1f);
+    [Tooltip("Quanto o pr√≥ximo checkpoint fica maior que os demais.")]
+    [SerializeField] private float nextCheckpointScale = 1.6f;
 
     // Base de coordenadas usada para converter mundo -> mapa.
     private Vector3 _center;
@@ -29,7 +43,7 @@ public class MinimapRenderer : MaskableGraphic
         UpdateBasis();
         _drawnEdges.Clear();
 
-        // 1) Segmentos: cada aresta tem sua prÛpria largura (uniforme).
+        // 1) Segmentos: cada aresta tem sua pr√≥pria largura (uniforme).
         foreach (var node in graph.Nodes)
         {
             if (node == null) continue;
@@ -38,7 +52,7 @@ public class MinimapRenderer : MaskableGraphic
             foreach (var neighbor in node.Neighbors)
             {
                 if (neighbor == null) continue;
-                // Desenha cada aresta uma vez, mesmo que a conex„o exista sÛ de um lado.
+                // Desenha cada aresta uma vez, mesmo que a conex√£o exista s√≥ de um lado.
                 if (!_drawnEdges.Add(EdgeKey(node, neighbor))) continue;
 
                 float half = EdgeHalfWidth(node, neighbor);
@@ -46,7 +60,7 @@ public class MinimapRenderer : MaskableGraphic
             }
         }
 
-        // 2) Disco em cada nÛ para arredondar/preencher juntas.
+        // 2) Disco em cada n√≥ para arredondar/preencher juntas.
         foreach (var node in graph.Nodes)
         {
             if (node == null) continue;
@@ -65,10 +79,44 @@ public class MinimapRenderer : MaskableGraphic
             if (degree == 0) continue;
 
             // Ponta/curva (1-2 ruas): cap do tamanho da rua (arredonda).
-            // InterseÁ„o (3+ ruas): sÛ o menor, para preencher o centro sem
+            // Interse√ß√£o (3+ ruas): s√≥ o menor, para preencher o centro sem
             // estourar para fora das ruas mais estreitas.
             float w2 = degree >= 3 ? minW : maxW;
             AddDisc(vh, WorldToMap(node.Position), lineWidth * w2 * 0.5f, color);
+        }
+
+        // 3) Trajeto da corrida por cima: linha colorida + c√≠rculos nos checkpoints.
+        DrawRoute(vh);
+    }
+
+    private void DrawRoute(VertexHelper vh)
+    {
+        if (race == null) return;
+        var route = race.Route;
+        if (route == null || route.Count < 2) return;
+
+        float routeHalf = lineWidth * routeWidthMultiplier * 0.5f;
+
+        // Linha do trajeto (na ordem dos checkpoints).
+        for (int i = 0; i + 1 < route.Count; i++)
+            if (route[i] != null && route[i + 1] != null)
+                AddSegment(vh, WorldToMap(route[i].Position), WorldToMap(route[i + 1].Position),
+                           routeHalf, routeHalf, routeColor);
+
+        // Fecha o circuito (√∫ltimo ‚Üí primeiro).
+        if (race.IsCircuit && route[0] != null && route[route.Count - 1] != null)
+            AddSegment(vh, WorldToMap(route[route.Count - 1].Position), WorldToMap(route[0].Position),
+                       routeHalf, routeHalf, routeColor);
+
+        // C√≠rculos nos checkpoints (o pr√≥ximo/alvo atual fica destacado).
+        RoadNode next = race.CurrentTarget;
+        foreach (var node in route)
+        {
+            if (node == null) continue;
+            bool isNext = node == next;
+            Color c = isNext ? nextCheckpointColor : checkpointColor;
+            float r = isNext ? checkpointRadius * nextCheckpointScale : checkpointRadius;
+            AddDisc(vh, WorldToMap(node.Position), r, c);
         }
     }
 
@@ -79,7 +127,7 @@ public class MinimapRenderer : MaskableGraphic
         return lineWidth * w * 0.5f;
     }
 
-    // Guarda as arestas j· desenhadas (chave independente da ordem A-B / B-A).
+    // Guarda as arestas j√° desenhadas (chave independente da ordem A-B / B-A).
     private readonly HashSet<long> _drawnEdges = new HashSet<long>();
 
     private static long EdgeKey(RoadNode a, RoadNode b)
@@ -98,15 +146,15 @@ public class MinimapRenderer : MaskableGraphic
         {
             _center = target.position;
 
-            // Usa sÛ a direÁ„o horizontal do carro (X,Z), ignorando Y.
+            // Usa s√≥ a dire√ß√£o horizontal do carro (X,Z), ignorando Y.
             Vector3 flatForward = target.forward;
             flatForward.y = 0f;
             if (flatForward.sqrMagnitude > 1e-4f)
             {
                 _forward = flatForward.normalized;
                 // "Direita" derivada do forward + up do mundo: sempre consistente,
-                // ent„o rolar/capotar o carro N√O espelha o mapa. (Se o carro
-                // aponta quase reto pra cima/baixo, mantÈm a ˙ltima base v·lida.)
+                // ent√£o rolar/capotar o carro N√ÉO espelha o mapa. (Se o carro
+                // aponta quase reto pra cima/baixo, mant√©m a √∫ltima base v√°lida.)
                 _right = Vector3.Cross(Vector3.up, _forward);
             }
         }
@@ -127,7 +175,7 @@ public class MinimapRenderer : MaskableGraphic
         return new Vector2(x, y) * zoom;
     }
 
-    // Segmento grosso (trapÈzio) de a atÈ b, com meia-largura prÛpria em cada ponta.
+    // Segmento grosso (trap√©zio) de a at√© b, com meia-largura pr√≥pria em cada ponta.
     private static void AddSegment(VertexHelper vh, Vector2 a, Vector2 b, float halfA, float halfB, Color32 col)
     {
         Vector2 dir = b - a;
@@ -146,7 +194,7 @@ public class MinimapRenderer : MaskableGraphic
         vh.AddTriangle(start, start + 2, start + 3);
     }
 
-    // Disco (leque de tri‚ngulos) para arredondar juntas e pontas.
+    // Disco (leque de tri√¢ngulos) para arredondar juntas e pontas.
     private static void AddDisc(VertexHelper vh, Vector2 center, float radius, Color32 col, int segments = 12)
     {
         if (radius <= 0f) return;
