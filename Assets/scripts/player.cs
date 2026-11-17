@@ -115,17 +115,16 @@ public class player : MonoBehaviour
 
     void Velocimeter()
     {
-        if (speedometer != null && currentCar != null)
+        if (speedometer == null) return;
+
+        if (currentCar != null)
         {
-            speedometer.gameObject.SetActive(false);
             speedometer.source = currentCar.GetComponent<Rigidbody>();
         }
-
         else
         {
-            speedometer.gameObject.SetActive(false);
             speedometer.source = null;
-        }    
+        }
     }
 
     private void EnterCar()
@@ -146,39 +145,41 @@ public class player : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         if (currentCar) yield break;
+        if (nearestCar == null) yield break;
+
+        Car_Controller carController = nearestCar.GetComponent<Car_Controller>();
+        if (carController == null)
+        {
+            Debug.LogError("O carro " + nearestCar.name + " não tem o script Car_Controller!");
+            yield break;
+        }
 
         drivingCam.Priority = 1;
 
         currentCar = nearestCar;
         isDriving = true;
 
-        currentCar.GetComponent<Car_Controller>().player = this;
-        playerSeat = currentCar.GetComponent<Car_Controller>().playerSeat;
+        carController.player = this;
+        playerSeat = carController.playerSeat;
 
-        speedometer.source = currentCar.GetComponent<Rigidbody>();
-        speedometer.gameObject.SetActive(true);
-
-        if (!currentCar.GetComponent<Car_Controller>().carStarted)
+        if (speedometer != null)
         {
-            currentCar.GetComponent<Car_Controller>().StartCar();
+            speedometer.source = currentCar.GetComponent<Rigidbody>();
+            speedometer.gameObject.SetActive(true);
+        }
+
+        if (!carController.carStarted)
+        {
+            carController.StartCar();
         }
 
         playerController.enabled = false;
-        //playerColiider.enabled = false;
 
         transform.SetParent(playerSeat);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        currentCar.GetComponent<Car_Controller>().enabled = true;
-    }
-
-    private void ExiteCar()
-    {
-        if(nearestCar != null)
-        {
-            StartCoroutine(ExitCarCouroutine());
-        }
+        carController.enabled = true;
     }
 
     IEnumerator ExitCarCouroutine()
@@ -187,26 +188,35 @@ public class player : MonoBehaviour
 
         if (!currentCar) yield break;
 
-        currentCar.GetComponent<Car_Controller>().enabled = false;
+        Car_Controller carController = currentCar.GetComponent<Car_Controller>();
+        carController.enabled = false;
+        carController.player = null;
 
         transform.SetParent(null);
         transform.position = currentCar.transform.position + currentCar.transform.right * -2.0f;
 
         playerController.enabled = true;
-        //playerCollider.enabled = true;
-
         playerSeat = null;
 
-        currentCar.GetComponent<Car_Controller>().player = null;
-
-        speedometer.source = null;
-        speedometer.gameObject.SetActive(false);
+        if (speedometer != null)
+        {
+            speedometer.source = null;
+            speedometer.gameObject.SetActive(false);
+        }
 
         currentCar = null;
         isDriving = false;
         nearestCar = null;
 
         drivingCam.Priority = -1;
+    }
+
+    private void ExiteCar()
+    {
+        if(nearestCar != null)
+        {
+            StartCoroutine(ExitCarCouroutine());
+        }
     }
 
     private void Gravity()
